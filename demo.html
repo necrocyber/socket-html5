@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <style media="screen">
+      canvas {
+        border:solid 5px #999;
+        background-color: #333333;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="lienzo" width="1000" height="600">
+      Tu navegador no soporta canvas
+    </canvas>
+    <script type="text/javascript">
+      var canvas, ctx, objetoActual = null, inicioX = 0, inicioY = 0, teclado = {}, move = function(){};
+      var objeto = [{
+        x: 10,
+        y: 10,
+        width: 30,
+        height: 100,
+        color: 'grey'
+      }
+      /*
+      , {
+        x: 100,
+        y: 100,
+        width: 50,
+        height: 50,
+        color: 'blue'
+      }*/]
+
+
+
+      //Iniciamos socket.io
+      var socket = io.connect();
+
+
+      function update(array, context) {
+        //Agregamos estas dos lineas para limpiar el canvas
+        context.fillStyle = '#333333';
+        context.fillRect(0,0,1000,600);
+
+        //creamos un forEach donde vamos agregando cada elemento
+        array.forEach(function(entry) {
+          context.save();
+          context.fillStyle = entry.color;
+          context.fillRect(entry.x, entry.y, entry.width, entry.height);
+          context.restore();
+        });
+      }
+
+      window.onload = function() {
+
+        canvas = document.getElementById('lienzo');
+        ctx = canvas.getContext('2d');
+        window.setInterval(frame, 1000/55);
+
+
+        //evento que detecta cuando se presiona una tecla
+        document.addEventListener('keydown', function(e) {
+          teclado[e.keyCode] = true;
+          //console.log(e.keyCode);
+          socket.emit('usuario', objeto[0]);
+        });
+
+        //evento que detecta cuando se deja de presionar una tecla
+        document.addEventListener('keyup', function(e) {
+          teclado[e.keyCode] = false;
+          //console.log(e.keyCode);
+          socket.emit('usuario', objeto[0]);
+        });
+
+        //Funcion que detecte el keycode del teclado (Si presiona flacha arriba es 38, abajo es 40)
+
+
+
+
+        function frame() {
+          socket.on('nuevo usuario', function(e) {
+            move = function(obj) {
+              if(teclado[38]) {
+                obj.y -= 6;
+                if(obj.y < 0) obj.y = 10;
+              }
+
+              if(teclado[40]) {
+                var limite = canvas.height - obj.height;
+                obj.y += 6;
+                if(obj.y > limite) obj.y = limite - 10;
+                //console.log('Presion');
+              }
+            }
+
+            console.log(e.y);
+          });
+          move(objeto[0]); //Los cambios de configuracion en las propiedades deben estar arriba
+          update(objeto, ctx);
+        }
+
+      }
+
+
+    </script>
+  </body>
+</html>
