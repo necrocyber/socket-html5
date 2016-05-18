@@ -16,7 +16,7 @@
       Tu navegador no soporta canvas
     </canvas>
     <script type="text/javascript">
-      var canvas, ctx, objetoActual = null, inicioX = 0, inicioY = 0, teclado = {}, move = function(){};
+      var canvas, ctx, objetoActual = null, inicioX = 0, inicioY = 0, teclado = {};
       var objeto = [{
         x: 10,
         y: 10,
@@ -38,7 +38,6 @@
       //Iniciamos socket.io
       var socket = io.connect();
 
-
       function update(array, context) {
         //Agregamos estas dos lineas para limpiar el canvas
         context.fillStyle = '#333333';
@@ -53,10 +52,23 @@
         });
       }
 
+
+
       window.onload = function() {
+
+
+
 
         canvas = document.getElementById('lienzo');
         ctx = canvas.getContext('2d');
+
+        socket.on('nuevo usuario', function(e) {
+          objeto[0].y = e.obje.y
+          console.log(e.obje.y);
+        });
+
+
+
         window.setInterval(frame, 1000/55);
 
 
@@ -64,46 +76,41 @@
         document.addEventListener('keydown', function(e) {
           teclado[e.keyCode] = true;
           //console.log(e.keyCode);
-          socket.emit('usuario', objeto[0]);
+
         });
 
         //evento que detecta cuando se deja de presionar una tecla
         document.addEventListener('keyup', function(e) {
           teclado[e.keyCode] = false;
           //console.log(e.keyCode);
-          socket.emit('usuario', objeto[0]);
+
         });
 
         //Funcion que detecte el keycode del teclado (Si presiona flacha arriba es 38, abajo es 40)
 
 
+        function move(obj) {
+          if(teclado[38]) {
+            obj.y -= 6;
+            if(obj.y < 0) obj.y = 10;
+            socket.emit('usuario', {obje: obj, tecl: teclado});
+          }
 
+          if(teclado[40]) {
+            var limite = canvas.height - obj.height;
+            obj.y += 6;
+            if(obj.y > limite) obj.y = limite - 10;
+            socket.emit('usuario', {obje: obj, tecl: teclado});
+            console.log(obj.y);
+          }
+        }
 
         function frame() {
-          socket.on('nuevo usuario', function(e) {
-            move = function(obj) {
-              if(teclado[38]) {
-                obj.y -= 6;
-                if(obj.y < 0) obj.y = 10;
-              }
-
-              if(teclado[40]) {
-                var limite = canvas.height - obj.height;
-                obj.y += 6;
-                if(obj.y > limite) obj.y = limite - 10;
-                //console.log('Presion');
-              }
-            }
-
-            console.log(e.y);
-          });
           move(objeto[0]); //Los cambios de configuracion en las propiedades deben estar arriba
           update(objeto, ctx);
         }
 
       }
-
-
     </script>
   </body>
 </html>
