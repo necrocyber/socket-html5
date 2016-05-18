@@ -23,6 +23,14 @@
         width: 30,
         height: 100,
         color: 'grey'
+      }]
+
+      var esfera = {
+        x: 350,
+        y: 250,
+        movx: 5,
+        movy: 3,
+        color: 'grey'
       }
       /*
       , {
@@ -31,7 +39,7 @@
         width: 50,
         height: 50,
         color: 'blue'
-      }*/]
+      }*/
 
 
 
@@ -43,7 +51,13 @@
         context.fillStyle = '#333333';
         context.fillRect(0,0,1000,600);
 
-        //creamos un forEach donde vamos agregando cada elemento
+        //Agregamos la esfera
+        context.beginPath();
+        context.fillStyle = esfera.color;
+        context.arc(esfera.x, esfera.y, 20, 0, 360,false);
+        context.fill();
+
+        //creamos un forEach donde vamos agregando cada elemento (player)
         array.forEach(function(entry) {
           context.save();
           context.fillStyle = entry.color;
@@ -64,10 +78,13 @@
 
         socket.on('nuevo usuario', function(e) {
           objeto[0].y = e.obje.y
-          console.log(e.obje.y);
+          //console.log(e.obje.y);
         });
 
-
+        socket.on('nueva esfera', function(e) {
+          esfera.x = e.x;
+          esfera.y = e.y;
+        });
 
         window.setInterval(frame, 1000/55);
 
@@ -87,8 +104,6 @@
         });
 
         //Funcion que detecte el keycode del teclado (Si presiona flacha arriba es 38, abajo es 40)
-
-
         function move(obj) {
           if(teclado[38]) {
             obj.y -= 6;
@@ -101,9 +116,21 @@
             obj.y += 6;
             if(obj.y > limite) obj.y = limite - 10;
             socket.emit('usuario', {obje: obj, tecl: teclado});
-            console.log(obj.y);
+            //console.log(obj.y);
           }
+
+          //Damos movimiento a la esfera
+          if( esfera.x >= 990 || esfera.x <= 10 )
+             esfera.movx = esfera.movx*-1;
+          if( esfera.y >= 590 || esfera.y <= 10 )
+             esfera.movy = esfera.movy*-1;
+          esfera.x = esfera.x+esfera.movx;
+          esfera.y = esfera.y+esfera.movy;
+          socket.emit('esfera', {x: esfera.x, y: esfera.y});
+
         }
+
+
 
         function frame() {
           move(objeto[0]); //Los cambios de configuracion en las propiedades deben estar arriba

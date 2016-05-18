@@ -12,7 +12,11 @@ io.on('connection', function(socket) {
 
   socket.on('usuario', function(u) {
     socket.broadcast.emit('nuevo usuario', u);
-    console.log('Desde el servidor: ' + u);
+    //console.log('Desde el servidor: ' + u);
+  });
+
+  socket.on('esfera', function(e) {
+    socket.broadcast.emit('nueva esfera', e);
   });
 
 });
