@@ -126,7 +126,20 @@
              esfera.movy = esfera.movy*-1;
           esfera.x = esfera.x+esfera.movx;
           esfera.y = esfera.y+esfera.movy;
+
+          //Sencilla funcion para crear la colision entre la esfera y el rectangulo
+          if ((ball.x > lPaddle.x)&&(ball.x < lPaddle.x+lPaddle.width) &&
+                (ball.y+20 > lPaddle.y)&&(ball.y < lPaddle.y+lPaddle.height)){
+            //Aqui existe colision
+            //console.log('true');
+
+          }else {
+            //No tenemos colision
+            //console.log('false');
+          }
           socket.emit('esfera', {x: esfera.x, y: esfera.y});
+
+          console.log('Esfera en X: ' + esfera.x);
 
         }
 
