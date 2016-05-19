@@ -30,6 +30,7 @@
         y: 250,
         movx: 5,
         movy: 3,
+        angle: 0,
         color: 'grey'
       }
       /*
@@ -54,7 +55,7 @@
         //Agregamos la esfera
         context.beginPath();
         context.fillStyle = esfera.color;
-        context.arc(esfera.x, esfera.y, 20, 0, 360,false);
+        context.arc(esfera.x, esfera.y, 20, esfera.angle, 360);
         context.fill();
 
         //creamos un forEach donde vamos agregando cada elemento (player)
@@ -103,6 +104,11 @@
 
         });
 
+        // Funcion de ayuda para pasar de grados a radianes
+        function deg2rad(deg){
+           return (deg * Math.PI/180);
+        }
+
         //Funcion que detecte el keycode del teclado (Si presiona flacha arriba es 38, abajo es 40)
         function move(obj) {
           if(teclado[38]) {
@@ -119,27 +125,42 @@
             //console.log(obj.y);
           }
 
-          //Damos movimiento a la esfera
-          if( esfera.x >= 990 || esfera.x <= 10 )
-             esfera.movx = esfera.movx*-1;
+
+
+
+          //Colisionamos la esfera con el borde superior, inferior
           if( esfera.y >= 590 || esfera.y <= 10 )
              esfera.movy = esfera.movy*-1;
+             esfera.angle = deg2rad(360) - esfera.angle;
+
+          if( esfera.x >= 990)
+             esfera.movx = esfera.movx*-1;
+             esfera.angle = deg2rad(360) - esfera.angle;
+
+
+          //Sencilla funcion para crear la colision entre la esfera y el rectangulo
+          if ((esfera.x > obj.x)&&(esfera.x < obj.x+obj.width) &&
+                (esfera.y+20 > obj.y)&&(esfera.y < obj.y+obj.height)) {
+              esfera.movx = esfera.movx*-1;
+              esfera.movy = esfera.movy*-1;
+            //Aqui existe colision
+            /*
+            var newAngle = (esfera.y + 10) - (obj.y + obj.height/2);
+            newAngle /= obj.height/2 + 10;
+            newAngle = deg2rad(80*newAngle);
+            esfera.angle = newAngle;
+            esfera.speed += 0.4;
+            */
+            console.log(true);
+          } else {
+            console.log(false);
+          }
+
           esfera.x = esfera.x+esfera.movx;
           esfera.y = esfera.y+esfera.movy;
 
-          //Sencilla funcion para crear la colision entre la esfera y el rectangulo
-          if ((ball.x > lPaddle.x)&&(ball.x < lPaddle.x+lPaddle.width) &&
-                (ball.y+20 > lPaddle.y)&&(ball.y < lPaddle.y+lPaddle.height)){
-            //Aqui existe colision
-            //console.log('true');
-
-          }else {
-            //No tenemos colision
-            //console.log('false');
-          }
+          //EL socket envia el mensaje de la nueva posicion de la esfera
           socket.emit('esfera', {x: esfera.x, y: esfera.y});
-
-          console.log('Esfera en X: ' + esfera.x);
 
         }
 
